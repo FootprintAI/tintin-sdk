@@ -1,0 +1,2 @@
+[settings]
+api_url = https://api.tintin.footprint-ai.com
