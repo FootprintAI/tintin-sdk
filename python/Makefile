@@ -1,5 +1,5 @@
-install-dependency:
-	pip3 install bumpversion=1.0.1 twine=0.6.0
+install:
+	pip3 install -r requirements.txt
 build:
 	python3 setup.py sdist bdist_wheel
 check:

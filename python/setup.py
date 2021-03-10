@@ -24,13 +24,13 @@ setup(
         "Programming Language :: Python :: 3.7",
     ],
     packages=find_packages(exclude=("tests",)),
-    package_data={'api': ['*.txt']},
+    package_data={'tintin': ['*.txt']},
     include_package_data=True,
     python_requires='>=3.7',
     install_requires=["requests"],
     entry_points={
         "console_scripts": [
-            "tintin-sdk=api.__main__:main",
+            "tintin-sdk=tintin.__main__:main",
         ]
     },
 )
