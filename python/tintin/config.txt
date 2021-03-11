@@ -3,5 +3,5 @@ api_url = https://api.tintin.footprint-ai.com
 
 [env]
 minio_token_name = TINTIN_SESSION_TEMPLATE_PROJECT_TOKEN_MINIO_DOWNLOAD
-project_name = TINTIN_SESSION_TEMPLATE_PVC_NAME
+project_name = TINTIN_SESSION_TEMPLATE_PROJECT_ID
 

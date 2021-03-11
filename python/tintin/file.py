@@ -17,7 +17,6 @@ def init_config():
     CFG = ConfigParser()
     CFG.read_string(read_text('tintin', 'config.txt'))
 
-logging.basicConfig(level=logging.DEBUG)
 
 def download(dst: str, filepaths: [str], verbose: bool = False):
     """download.
@@ -33,7 +32,10 @@ def download(dst: str, filepaths: [str], verbose: bool = False):
     init_config()
 
     if verbose:
+        logging.basicConfig(level=logging.DEBUG)
         httpclient_logging_activate()
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     token = os.environ.get(CFG.get('env', 'minio_token_name'))
     for filepath in filepaths:
@@ -93,6 +95,8 @@ def normalized_local_path(filepath: str) -> str:
     prefix = '{}/api/v1/project/{}/minio/object/'.format(api_url, project)
     if filepath.startswith(prefix):
         return filepath[len(prefix):]
+    if filepath.startswith('/'):
+        filepath = filepath[len('/'):] # strip leading '/'
     return filepath
 
 def writefile(filename:str, r):
