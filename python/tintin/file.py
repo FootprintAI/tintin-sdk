@@ -63,11 +63,19 @@ def normalized_http_path(filepath: str) -> str:
     """
     if filepath.startswith('https://') or filepath.startswith('http://'):
         return filepath
+    if filepath.startswith('/'):
+        filepath = filepath[len('/'):] # strip leading '/'
     api_url = CFG.get('endpoint', 'api_url')
-    project = os.environ.get(CFG.get('env', 'project_name'))
-    print('project:', project)
-    normalized_path = '{}/api/v1/project/{}/minio/object/{}'.format(api_url, project, filepath)
+    project = get_project_id()
+    normalized_path = os.path.join(api_url, 'api/v1/project', project, 'minio/object', filepath)
     return normalized_path
+
+def get_project_id() -> str:
+    prefix = 'project-'
+    project = os.environ.get(CFG.get('env', 'project_name'))
+    if project.startswith(prefix):
+        return project[len(prefix):]
+    return project
 
 def normalized_local_path(filepath: str) -> str:
     """normalized_local_path.
@@ -81,7 +89,7 @@ def normalized_local_path(filepath: str) -> str:
         str:
     """
     api_url = CFG.get('endpoint', 'api_url')
-    project = os.environ.get(CFG.get('env', 'project_name'))
+    project = get_project_id()
     prefix = '{}/api/v1/project/{}/minio/object/'.format(api_url, project)
     if filepath.startswith(prefix):
         return filepath[len(prefix):]
