@@ -5,112 +5,142 @@ import logging
 from configparser import ConfigParser
 from importlib.resources import read_text
 
-from tintin.auth import MinioAuth
+from tintin.api import TintinApi
 from tintin.logging import httpclient_logging_activate
-
-CFG = None
+from tintin.util import write_response_to_file
+from tintin.util import list_all_files
 
 def init_config():
-    global CFG
-    if CFG is not None:
-        return
-    CFG = ConfigParser()
-    CFG.read_string(read_text('tintin', 'config.txt'))
+    """init_config.
+    """
+    cfg = ConfigParser()
+    cfg.read_string(read_text('tintin', 'config.txt'))
+    return cfg
 
-
-def download(dst: str, filepaths: [str], verbose: bool = False):
-    """download.
-
-    download multiple files into local dst folder
+def init_api_stub(host: str):
+    """init_api_stub.
 
     Args:
-        dst (str): dst
-        filepaths ([str]): filepaths
-        verbose (bool): verbose
+        host (str): host
     """
+    return TintinApi(host, init_config())
 
-    init_config()
+class FileManager():
+    def __init__(self, host: str, verbose: bool):
+        """__init__.
 
-    if verbose:
-        logging.basicConfig(level=logging.DEBUG)
-        httpclient_logging_activate()
-    else:
-        logging.basicConfig(level=logging.INFO)
+        Args:
+            host (str): host
+            verbose (bool): verbose
+        """
+        self.host = host
+        self.CFG = init_config()
+        self.ApiStub = init_api_stub(host)
+        self.verbose = verbose
 
-    token = os.environ.get(CFG.get('env', 'minio_token_name'))
-    for filepath in filepaths:
-        normalized_filepath = normalized_http_path(filepath)
-        normalized_localpath = normalized_local_path(filepath)
-        r = requests.get(normalized_filepath, auth=MinioAuth(token))
-        if r.status_code is not 200:
-            logging.info('{} has invalid response code: {}, error msg:{}'.format(normalized_localpath, r.status_code,
-                        r.content))
-            return False
-        dst_path = os.path.join(dst, normalized_localpath)
-        writefile(dst_path, r)
-        logging.info('{} has been downloaded.'.format(dst_path))
+        if verbose:
+            logging.basicConfig(level=logging.DEBUG)
+            httpclient_logging_activate()
+        else:
+            logging.basicConfig(level=logging.INFO)
 
-    return True
+    def list(self, prefix: str) -> [str]:
+        """list.
 
-def normalized_http_path(filepath: str) -> str:
-    """normalized_http_path.
+        Args:
+            prefix (str): prefix
 
-        normalized any given filepath into https address
+        Returns:
+            [str]:
+        """
+        list_uri = 'api/v1/project/{}/minio/object?prefix={}&recursive=True'.format(self.get_project_id(), prefix)
+        resp = self.ApiStub.get(list_uri)
+        if resp.status_code != 200:
+            logging.info('{} has invalid response code: {}, error msg:{}'.format(prefix, resp.status_code, resp.content))
+            return []
+        local_object_paths: [str] = [];
+        for obj in resp.json()['objectInfoList']:
+            local_object_paths.append(obj.name)
+        return local_object_paths
 
-    Args:
-        filepath (str): filepath
 
-    Returns:
-        str:
-    """
-    if filepath.startswith('https://') or filepath.startswith('http://'):
-        return filepath
-    if filepath.startswith('/'):
-        filepath = filepath[len('/'):] # strip leading '/'
-    api_url = CFG.get('endpoint', 'api_url')
-    project = get_project_id()
-    normalized_path = os.path.join(api_url, 'api/v1/project', project, 'minio/object', filepath)
-    return normalized_path
+    def upload(self, prefix: str, local_dir: str):
+        """upload.
 
-def get_project_id() -> str:
-    prefix = 'project-'
-    project = os.environ.get(CFG.get('env', 'project_name'))
-    if project.startswith(prefix):
-        return project[len(prefix):]
-    return project
+        Args:
+            prefix (str): prefix
+            local_dir (str): local_dir
+        """
+        local_file_paths = list_all_files(local_dir)
+        for local_file_path in local_file_paths:
+            object_uri = 'api/v1/project/{}/minio/object/{}'.format(self.get_project_id(), local_file_path)
+            with open(local_file_path, 'rb') as f:
+                resp = self.ApiStub.put(object_uri, f.read())
+                if resp.status_code != 200:
+                   logging.info('{} has invalid response code: {}, error msg:{}'.format(local_file_path, resp.status_code, resp.content))
+                   return False
+        return True
 
-def normalized_local_path(filepath: str) -> str:
-    """normalized_local_path.
+    def download(self, dst: str, filepaths: [str], recursive: bool = False):
+        """download.
 
-        De-normalize https path into object path
+        Args:
+            dst (str): dst
+            filepaths ([str]): filepaths
+            recursive (bool): recursive
+        """
+        local_file_paths:[str] = []
+        for filepath in filepaths:
+            object_path = self.get_object_path(filepath)
+            local_file_paths.append(object_path)
 
-    Args:
-        filepath (str): filepath
+        if recursive:
+            local_file_paths_with_recursive:[str] = []
+            # resolve filepaths all
+            for local_file_path in local_file_paths:
+                local_file_paths_with_recursive.extend(self.list(local_file_path))
+            local_file_paths = local_file_paths_with_recursive
 
-    Returns:
-        str:
-    """
-    api_url = CFG.get('endpoint', 'api_url')
-    project = get_project_id()
-    prefix = '{}/api/v1/project/{}/minio/object/'.format(api_url, project)
-    if filepath.startswith(prefix):
-        return filepath[len(prefix):]
-    if filepath.startswith('/'):
-        filepath = filepath[len('/'):] # strip leading '/'
-    return filepath
+        for local_file_path in local_file_paths:
+            object_uri = 'api/v1/project/{}/minio/object/{}'.format(self.get_project_id(), local_file_path)
+            resp = self.ApiStub.get(object_uri)
+            if resp.status_code != 200:
+                logging.info('{} has invalid response code: {}, error msg:{}'.format(local_file_path, resp.status_code, resp.content))
+                return False
+            dst_path = os.path.join(dst, local_file_path)
+            write_response_to_file(dst_path, resp)
+            logging.info('{} has been downloaded.'.format(dst_path))
 
-def writefile(filename:str, r):
-    """writefile.
+        return True
 
-        writefile is an utility function which create filename's parent folders
-        if not exists and write r.content into filename
+    def get_object_path(self, networkorlocalpath: str) -> str:
+        """get_object_path.
 
-    Args:
-        filename (str): filename
-        r:
-    """
-    if not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
-    with open(filename, 'wb') as f:
-        f.write(r.content)
+        Args:
+            networkorlocalpath (str): networkorlocalpath
+
+        Returns:
+            str:
+        """
+        minio_network_prefix = os.path.join(self.host, 'api/v1/project', self.get_project_id(), 'minio/object/')
+        if networkorlocalpath.startswith(minio_network_prefix):
+            return networkorlocalpath[len(minio_network_prefix):]
+        # check leading /
+        if networkorlocalpath.startswith('/'):
+            return networkorlocalpath[len('/'):]
+        return networkorlocalpath
+
+    def get_project_id(self) -> str:
+        """get_project_id.
+
+        Args:
+
+        Returns:
+            str:
+        """
+        prefix = 'project-'
+        project = os.environ.get(self.CFG.get('env', 'project_name'))
+        if project.startswith(prefix):
+            return project[len(prefix):]
+        return project
 
