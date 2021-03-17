@@ -60,7 +60,7 @@ class FileManager():
             return []
         local_object_paths: [str] = [];
         for obj in resp.json()['objectInfoList']:
-            local_object_paths.append(obj.name)
+            local_object_paths.append(obj['name'])
         return local_object_paths
 
 

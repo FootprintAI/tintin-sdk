@@ -5,17 +5,16 @@ from unittest import mock
 from tintin.file import FileManager 
 
 class TestFileDownload(unittest.TestCase):
-    debug = True
+    debug = False
     host = 'https://api.tintin.footprint-ai.com'
-    m = mock.patch.dict(os.environ, {'TINTIN_SESSION_TEMPLATE_PVC_NAME': 'project-2x2dw41yr5v9omyvmn0768kzelg3p5',
-    'TINTIN_SESSION_TEMPLATE_PROJECT_ID': '2x2dw41yr5v9omyvmn0768kzelg3p5',
-    'TINTIN_SESSION_TEMPLATE_PROJECT_TOKEN_MINIO_DOWNLOAD': 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiIqLmZvb3RwcmludC1haS5jb20iLCJleHAiOjIyNDY2NzUzNzEsImp0aSI6IjFiZjJmZWZhLWQ5ZTItNDI0Ny1hZTFhLTg1NGQyYjNkMDkzNSIsImlhdCI6MTYxNTk1NTM3MSwiaXNzIjoiYXV0aG9yaXphdGlvbi5mb290cHJpbnQtYWkuY29tIiwibmJmIjoxNjE1OTU1MzcxfQ.GhM9n4esNrDvf3dBGSOLoeWDzKwnxACq2BB9zXxY34cQ6T6RyTQOHipNiBsLyDabYjrrCrvtBFSvPpDMayoVMA',
+    m = mock.patch.dict(os.environ, { 'TINTIN_SESSION_TEMPLATE_PROJECT_ID': '427wr4e8lno9gjgzmd6kp03vxyz51w',
+    'TINTIN_SESSION_TEMPLATE_PROJECT_TOKEN_MINIO_DOWNLOAD': 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiIqLmZvb3RwcmludC1haS5jb20iLCJleHAiOjIyNDY2OTM0NDUsImp0aSI6ImEyZWM0YmUwLTA0NDYtNDc1Mi05ZjRmLWQ2YTg5NDM4MmM0YiIsImlhdCI6MTYxNTk3MzQ0NSwiaXNzIjoiYXV0aG9yaXphdGlvbi5mb290cHJpbnQtYWkuY29tIiwibmJmIjoxNjE1OTczNDQ1fQ.lCd3QwELdGXUhocQ3vhC1604RXdjOTJ2dRb9FHHQbAxAR-uTXECmVwRRbrRIGJV0p17t8gQ-5RnPMSh1Hj8ldQ',
         })
     def test_http_file_download(self):
         self.m.start()
         mgr = FileManager(self.host, self.debug)
         self.assertEqual(mgr.download('/tmp',
-            ['https://api.tintin.footprint-ai.com/api/v1/project/2x2dw41yr5v9omyvmn0768kzelg3p5/minio/object/testdata/1.jpg'],
+            ['https://api.tintin.footprint-ai.com/api/v1/project/427wr4e8lno9gjgzmd6kp03vxyz51w/minio/object/testdata/1.jpg'],
         ), True)
         self.m.stop()
 
