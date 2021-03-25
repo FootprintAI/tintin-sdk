@@ -1,6 +1,9 @@
 import os
 
 def list_all_files(path_dir:str)-> [str]:
+    if os.path.isfile(path_dir):
+        return [path_dir]
+
     files = []
     for (dirpath, dirnames, filenames) in os.walk(path_dir):
         for filename in filenames:

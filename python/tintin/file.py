@@ -72,8 +72,13 @@ class FileManager():
             local_dir (str): local_dir
         """
         local_file_paths = list_all_files(local_dir)
+        if not local_file_paths:
+            logging.info('nothing to be uploaded')
+            return False
         for local_file_path in local_file_paths:
-            object_uri = 'api/v1/project/{}/minio/object/{}'.format(self.get_project_id(), local_file_path)
+            dst_path = os.path.join(prefix, local_file_path)
+            logging.info('{} has been upload.'.format(dst_path))
+            object_uri = 'api/v1/project/{}/minio/object/{}'.format(self.get_project_id(), dst_path)
             with open(local_file_path, 'rb') as f:
                 resp = self.ApiStub.put(object_uri, f.read())
                 if resp.status_code != 200:
