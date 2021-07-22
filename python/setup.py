@@ -10,7 +10,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="tintin-sdk",
-    version="0.0.4",
+    version="0.0.5",
     description="A Python SDK for Tintin",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -21,12 +21,12 @@ setup(
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.6",
     ],
     packages=find_packages(exclude=("tests",)),
     package_data={'tintin': ['*.txt']},
     include_package_data=True,
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     install_requires=["requests","dill"],
     entry_points={
         "console_scripts": [
