@@ -6,11 +6,12 @@ from tintin.file import FileManager
 
 debug = False
 host = 'https://api.tintin.footprint-ai.com'
-m = mock.patch.dict(os.environ, { 'TINTIN_SESSION_TEMPLATE_PROJECT_ID': '427wr4e8lno9gjgzmd6kp03vxyz51w',
-'TINTIN_SESSION_TEMPLATE_PROJECT_TOKEN_MINIO_DOWNLOAD': 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiIqLmZvb3RwcmludC1haS5jb20iLCJleHAiOjIyNDczNzI0ODMsImp0aSI6IjYwNjc5YzRhLTA2MzItNDJjYS05NjdiLTNiYTIwNTVmZjlhMiIsImlhdCI6MTYxNjY1MjQ4MywiaXNzIjoiYXV0aG9yaXphdGlvbi5mb290cHJpbnQtYWkuY29tIiwibmJmIjoxNjE2NjUyNDgzfQ.U5xM9jryw-nMXHN6Ly55juDPiiYgLFj3xC5s9J0B3BcH43MoQn8Gs-2WXG8CZs7tCZbasysjc2X1oQyL4_5DQg',
+project_id = '1vpe4zw1y68gnj308j7xol0krd3529'
+m = mock.patch.dict(os.environ, { 'TINTIN_SESSION_TEMPLATE_PROJECT_ID': project_id,
+'TINTIN_SESSION_TEMPLATE_PROJECT_TOKEN_MINIO_DOWNLOAD': 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiIqLmZvb3RwcmludC1haS5jb20iLCJleHAiOjIyNTc3ODA4ODgsImp0aSI6IjQ0ODkxNDVlLTAzZWEtNDA2Yy1iZTFmLWViMWUxNjcxNmJlOCIsImlhdCI6MTYyNzA2MDg4OCwiaXNzIjoiYXV0aG9yaXphdGlvbi5mb290cHJpbnQtYWkuY29tIiwibmJmIjoxNjI3MDYwODg4fQ.uMRPw5JIW9O35MqsPhLJ2FR-fzx7IadRz51cVmeX_f94O3900M8r2B4ikcCdoDAXQpsTvfZpj88gBewtoOdz_Q',
 })
 
-class TestFileDownload(unittest.TestCase):
+class TestBFileDownload(unittest.TestCase):
     global m
     global host
     global debug
@@ -19,7 +20,7 @@ class TestFileDownload(unittest.TestCase):
         m.start()
         mgr = FileManager(host, debug)
         self.assertEqual(mgr.download('/tmp',
-            ['https://api.tintin.footprint-ai.com/api/v1/project/427wr4e8lno9gjgzmd6kp03vxyz51w/minio/object/testdata/1.jpg'],
+            ['https://api.tintin.footprint-ai.com/api/v1/project/{}/minio/object/testupload/testdata/1.txt'.format(project_id)],
         ), True)
         m.stop()
 
@@ -27,7 +28,7 @@ class TestFileDownload(unittest.TestCase):
         m.start()
         mgr = FileManager(host, debug)
         self.assertEqual(mgr.download('/tmp',
-            ['/testdata/1.jpg'],
+            ['/testupload/testdata/1.txt'],
         ), True)
         m.stop()
 
@@ -35,7 +36,7 @@ class TestFileDownload(unittest.TestCase):
         m.start()
         mgr = FileManager(host, debug)
         self.assertEqual(mgr.download('/tmp',
-            ['/testdata/notfound.jpg'],
+            ['/testupload/testdata/notfound.jpg'],
         ), False)
         m.stop()
 
@@ -48,7 +49,7 @@ class TestFileDownload(unittest.TestCase):
         ), True)
         m.stop()
 
-class TestFileUpload(unittest.TestCase):
+class TestAFileUpload(unittest.TestCase):
     global m
     global host
     global debug
@@ -56,14 +57,14 @@ class TestFileUpload(unittest.TestCase):
     def test_folder_upload(self):
         m.start()
         mgr = FileManager(host, debug)
-        # should upload to /testupload/testdata/...
+        # should upload to destination with /testupload/testdata/...
         self.assertEqual(mgr.upload('/testupload', './testdata'), True)
         m.stop()
 
     def test_file_upload(self):
         m.start()
         mgr = FileManager(host, debug)
-        # should upload to /testupload/testdata/1.txt individual file
+        # should upload to destination /testupload/testdata/1.txt individual file
         self.assertEqual(mgr.upload('/testupload', './testdata/1.txt'), True)
         m.stop()
 
