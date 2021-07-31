@@ -7,7 +7,9 @@ from tintin.logging import httpclient_logging_activate
 from tintin.util import write_response_to_file
 from tintin.util import list_all_files
 
-class FileManager():
+from tintin.file.file_manager import FileManagerInterface
+
+class FileManager(FileManagerInterface):
     """FileManager
         Implements http interface for upload/download files
     """

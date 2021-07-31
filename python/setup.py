@@ -27,7 +27,7 @@ setup(
     package_data={'tintin': ['*.txt']},
     include_package_data=True,
     python_requires='>=3.6',
-    install_requires=["requests","dill"],
+    install_requires=["requests","dill",'minio'],
     entry_points={
         "console_scripts": [
             "tintin-sdk=tintin.__main__:main",
