@@ -2,4 +2,4 @@
 __all__ = ['tintin']
 
 # Version of the tintin-sdk package
-__version__ = "0.0.5"
+__version__ = "0.1.0"

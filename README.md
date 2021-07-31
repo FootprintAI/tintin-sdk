@@ -14,15 +14,17 @@ pip install tintin-sdk
 
 ```python
 
-from tintin.file import FileManager 
 
-host = 'https://api.wmlk.footprint-ai.com'
+from tintin.file.minio import FileManager as minioFileManager
+
 debug = False
-mgr = FileManager(host, debug)
+mgr = FileManager('', debug)
 
-// download individual assets from /testdata/1.jpg to /tmp folder
+// download individual assets from /testdata/1.jpg to /tmp/testdata/1.jpg folder
 mgr.download('/tmp',['/testdata/1.jpg'])
 
 // download the entire objects with prefix /testdata into /tmp folder
 mgr.download('/tmp',['/testdata'])
 ```
+
+see more on testcase.

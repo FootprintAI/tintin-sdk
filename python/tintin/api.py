@@ -1,7 +1,7 @@
-import os
 import requests
 
 from tintin.auth import MinioAuth
+from tintin.env import Environ
 
 def _strip_leading_slash(str):
     if str.startswith('/'):
@@ -11,12 +11,12 @@ def _strip_leading_slash(str):
     return str
 
 class TintinApi():
-    def __init__(self, host, cfg):
-        self.cfg = cfg
+    def __init__(self, host: str, env: Environ):
+        self.env = env
         self.host = host
 
     def _token(self):
-        return os.environ.get(self.cfg.get('env', 'minio_token_name'))
+        return self.env.minio_token_name
 
     def _api(self):
         return self.host
