@@ -1,1 +1,2 @@
 include tintin/*.txt
+recursive-include tintin *.txt *.py
